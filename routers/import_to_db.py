@@ -1,8 +1,12 @@
+import logging
+
 from fastapi import APIRouter
 from typing import Annotated
 
 import pandas as pd
 from fastapi import Depends
+from sqlalchemy import inspect
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 import models
 from models import Tickets
@@ -13,6 +17,10 @@ router = APIRouter(
     tags=["导入数据库"],
 )
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -20,15 +28,18 @@ def get_db():
     finally:
         db.close()
 
+
 db_dependency = Annotated[Session, Depends(get_db)]
+
 
 def convert_yn_to_bool(value):
     if isinstance(value, str):
         return value.strip().upper() == 'Y'
     return False
 
+
 @router.post("/import")
-async def import_excel_to_db(db: db_dependency ,file_path: str = "data/output.xlsx"):
+async def import_excel_to_db(db: db_dependency, file_path: str = "data/output.xlsx"):
     df = pd.read_excel(file_path)
 
     # Excel 列 → 数据库字段 映射（请按你实际列名调整）
@@ -57,28 +68,28 @@ async def import_excel_to_db(db: db_dependency ,file_path: str = "data/output.xl
         "Lead Time": "lead_time",
     }, inplace=True)
 
-
     # 转换布尔字段
     df['completed'] = df['completed'].apply(convert_yn_to_bool)
     df['escalated'] = df['escalated'].apply(convert_yn_to_bool)
 
     # 强制将 NaT / NaN 转为 None（防止 'NaT' 字符串进入数据库）
-    df['reported_at'] = df['reported_at'].apply(lambda x: None if pd.isna(x) else x)
-    df['completed_at'] = df['completed_at'].apply(lambda x: None if pd.isna(x) else x)
+    # 更彻底地将 NaT 转换为 None
+    df['reported_at'] = df['reported_at'].astype(object).where(pd.notna(df['reported_at']), None)
+    df['completed_at'] = df['completed_at'].astype(object).where(pd.notna(df['completed_at']), None)
 
     # 再给其他列填充空字符串，排除时间列
     time_columns = ["reported_at", "completed_at"]
     df.fillna(value={col: "" for col in df.columns if col not in time_columns}, inplace=True)
 
-    success_count = 0
-
     for _, row in df.iterrows():
-        ticket = models.Tickets(**row.to_dict())
+        ticket_data = row.to_dict()
+        ticket = models.Tickets(**ticket_data)
         db.add(ticket)
-        success_count += 1
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()  # 回滚当前事务，避免阻塞后续插入
+            logger.warning(f"⛔ 跳过重复主键 ID: {ticket.id}")
 
-    db.commit()
-    db.close()
 
     return {"message": "✅ 数据导入完成", "rows": len(df)}
-

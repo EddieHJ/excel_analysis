@@ -11,7 +11,7 @@ router = APIRouter(
 input_path = 'data/input.xlsx'
 output_path = 'data/output.xlsx'
 
-@router.post("/convert_excel", status_code=HTTP_204_NO_CONTENT)
+@router.post("/convert_excel")
 async def convert_endpoint():
     try:
         excel_processor.convert_raw_to_output(input_path, output_path)

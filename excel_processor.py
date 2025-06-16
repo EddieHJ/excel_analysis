@@ -6,7 +6,8 @@ def convert_raw_to_output(input_path: str, output_path: str):
     df = pd.read_excel(input_path)
 
     # 拆分字段
-    df[['组织1', '组织2']] = df['组织'].str.split('/', expand=True)
+    # df[['组织1', '组织2']] = df['组织'].str.split('/', expand=True)
+    df[['组织1', '组织2']] = df['组织'].str.extract(r'([^/]+)?/?([^/]*)?')
     df['组织1'] = df['组织1'].str.strip()
     df['组织2'] = df['组织2'].str.strip()
 
