@@ -1,9 +1,6 @@
 import pandas as pd
 
 def convert_raw_to_output(input_path: str, output_path: str):
-    # 文件路径
-    input_path = 'data/input.xlsx'
-    output_path = 'data/output.xlsx'
 
     # 1. 用 pandas 读取和处理数据
     df = pd.read_excel(input_path)
@@ -38,4 +35,4 @@ def convert_raw_to_output(input_path: str, output_path: str):
     df_final.to_excel(output_path, index=False)
 
 
-    print("✅ 已输出文件，表头加粗并添加筛选器：", output_path)
+    print("✅ 已输出文件：", output_path)

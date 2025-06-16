@@ -12,7 +12,7 @@ class Tickets(Base):
     __tablename__ = 'tickets'
 
     id = Column(String, primary_key=True, nullable=False, unique=True)
-    title = Column(String, nullable=False)
+    title = Column(String)
     creator = Column(String)
     assignee = Column(String)
     urgency = Column(String)
@@ -28,6 +28,7 @@ class Tickets(Base):
     event_type_1 = Column(String)
     event_type_2 = Column(String)
     event_type_3 = Column(String)
+    event_type_4 = Column(String)
     reported_at = Column(DateTime(timezone=True), default=beijing_now)
     completed_at = Column(DateTime(timezone=True), default=beijing_now)
     completed = Column(Boolean, default=False)
