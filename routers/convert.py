@@ -8,7 +8,7 @@ router = APIRouter(
     tags=["转换原数据"],
 )
 
-input_path = 'data/input.xlsx'
+input_path = 'data/2025.xlsx'
 output_path = 'data/output.xlsx'
 
 @router.post("/convert_excel")

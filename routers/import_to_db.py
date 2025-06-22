@@ -37,6 +37,10 @@ def convert_yn_to_bool(value):
         return value.strip().upper() == 'Y'
     return False
 
+# 空值处理
+def deal_na():
+
+
 
 @router.post("/import")
 async def import_excel_to_db(db: db_dependency, file_path: str = "data/output.xlsx"):
@@ -78,8 +82,21 @@ async def import_excel_to_db(db: db_dependency, file_path: str = "data/output.xl
     df['completed_at'] = df['completed_at'].astype(object).where(pd.notna(df['completed_at']), None)
 
     # 再给其他列填充空字符串，排除时间列
-    time_columns = ["reported_at", "completed_at"]
-    df.fillna(value={col: "" for col in df.columns if col not in time_columns}, inplace=True)
+    # time_columns = ["reported_at", "completed_at"]
+    # df.fillna(value={col: "" for col in df.columns if col not in time_columns}, inplace=True)
+
+    # 数值列：将 NaN 转为 None（不能填 ""）
+    int_columns = ["quantity"]
+    for col in int_columns:
+        df['quantity'] = df['quantity'].astype('Int64')  # nullable int，空值是 <NA>
+        # logger.warning(f"!!!!!!!!!!!!!!!!!: {df['quantity'].iloc[133]}")
+        # df['quantity'] = df['quantity'].apply(lambda x: None if pd.isna(x) else x)
+
+    # 其他字段（字符串列）：填充 ""
+    skip_columns = ["reported_at", "completed_at"] + int_columns
+    for col in df.columns:
+        if col not in skip_columns:
+            df[col] = df[col].fillna("")
 
     for _, row in df.iterrows():
         ticket_data = row.to_dict()
