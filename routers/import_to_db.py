@@ -37,8 +37,9 @@ def convert_yn_to_bool(value):
         return value.strip().upper() == 'Y'
     return False
 
-# 空值处理
-def deal_na():
+# # 空值处理
+# def deal_na(df: pd.DataFrame):
+#     df['reported_at'].apply()
 
 
 
