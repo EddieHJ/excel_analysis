@@ -26,6 +26,16 @@ class TicketsRangeAndEventType4Query(BaseModel):
     end_date: datetime
     event_type_3: str
 
+class TicketsRangeAndEventType4Query1(BaseModel):
+    start_date_1: datetime
+    end_date_1: datetime
+    event_type_3_first: str
+
+class TicketsRangeAndEventType4Query2(BaseModel):
+    start_date_2: datetime
+    end_date_2: datetime
+    event_type_3_second: str
+
 
 class TicketRepository:
     def __init__(self, db: db_dependency):
@@ -33,6 +43,11 @@ class TicketRepository:
 
     # CRUD
     # 分析型方法
+    """获取两个日期段 + 特定event_type_3内的工单"""
+    # def get_tickets_by_two_dates_and_type(self, date1: TicketsRangeQuery1, date2: TicketsRangeQuery2, event_type: str):
+
+
+
     """获取指定日期范围 + 特定event_type_3内的工单"""
     def get_tickets_by_date_and_type(self, params: TicketsRangeAndEventType4Query):
         stmt = (

@@ -2,6 +2,7 @@ from database import Base
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from sqlalchemy.inspection import inspect
 
 # 时区设置
 def beijing_now():
@@ -34,6 +35,13 @@ class Tickets(Base):
     completed = Column(Boolean, default=False)
     escalated = Column(Boolean, default=False)
     lead_time = Column(String(50))
+
+    def to_dict(self):
+        """将 ORM 实例转换为字典，适用于 JSON/Pandas/AI 分析等"""
+        return {
+            c.key: getattr(self, c.key)
+            for c in inspect(self).mapper.column_attrs
+        }
 
 
 
